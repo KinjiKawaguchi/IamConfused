@@ -1,7 +1,7 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
-import faker from Faker
+from faker import Faker
 
 # Enter password
 password = st.text_input("Enter password", type='password')
