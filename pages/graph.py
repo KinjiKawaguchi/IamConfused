@@ -31,18 +31,26 @@ def showGraph():
 
     # studentsテーブルが存在すれば以下のクエリを実行
     if check_table_exists(conn, 'students'):
-        c.execute('SELECT understanding, COUNT(*) FROM students WHERE understanding IS NOT NULL GROUP BY understanding')
-        results = c.fetchall()
+        c = conn.cursor()
+        c.execute('SELECT COUNT(*) FROM students')
+        count = c.fetchone()[0]
 
-        # Show as a bar chart
-        df = pd.DataFrame(results, columns=['Understanding', 'Count'])
-        df = df.sort_values('Understanding')
-        plt.bar(df['Understanding'], df['Count'], tick_label=df['Understanding'])
-        plt.xlabel('Understanding')
-        plt.ylabel('Count')
-        plt.title('Understanding Distribution')
-        st.pyplot(plt.gcf())
-        plt.clf()
+        if count > 0:
+            c.execute(
+                'SELECT understanding, COUNT(*) FROM students WHERE understanding IS NOT NULL GROUP BY understanding')
+            results = c.fetchall()
+
+            # Show as a bar chart
+            df = pd.DataFrame(results, columns=['Understanding', 'Count'])
+            df = df.sort_values('Understanding')
+            plt.bar(df['Understanding'], df['Count'], tick_label=df['Understanding'])
+            plt.xlabel('Understanding')
+            plt.ylabel('Count')
+            plt.title('Understanding Distribution')
+            st.pyplot(plt.gcf())
+            plt.clf()
+        else:
+            print("No records in the table.")
 
     # データベース接続を閉じる
     conn.close()
