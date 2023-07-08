@@ -9,6 +9,16 @@ def showGraph():
     conn = sqlite3.connect('confused.db')
     c = conn.cursor()
 
+    # Create table for students if it doesn't exist
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id TEXT PRIMARY KEY,
+            password TEXT,
+            understanding INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # テーブルが存在するか確認
     def check_table_exists(db_con, table_name):
         db_cur = db_con.cursor()

@@ -11,6 +11,16 @@ if password == 'caretaker':
     conn = sqlite3.connect('confused.db')
     c = conn.cursor()
 
+    # Create table for students if it doesn't exist
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id TEXT PRIMARY KEY,
+            password TEXT,
+            understanding INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # Fetch all student data
     c.execute('SELECT * FROM students')
     students = c.fetchall()
