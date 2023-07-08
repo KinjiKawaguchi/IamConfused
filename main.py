@@ -1,6 +1,6 @@
 import streamlit as st
 import sqlite3
-from pages import student, teacher
+from pages import teacher
 
 class User:
     def __init__(self):
