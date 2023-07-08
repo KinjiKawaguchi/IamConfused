@@ -64,4 +64,4 @@ if not user.id == None:
             # Update understanding in database
             c.execute('UPDATE students SET understanding = ? WHERE id = ?', (understanding, id))
             conn.commit()
-            st.write('理解度が更新されました')
+            #st.write('理解度が更新されました')
