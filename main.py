@@ -23,25 +23,22 @@ c.execute('''
 ''')
 conn.commit()
 
-while True:
-    # Authenticate user
-    id = st.text_input('学籍番号を入力してください')
-    password = st.text_input('誕生日を入力してください', type='password')
-    if id and password:
-        c.execute('SELECT password FROM students WHERE id = ?', (id,))
-        result = c.fetchone()
-        if result is None:
-            # Register new user
-            c.execute('INSERT INTO students (id, password, understanding) VALUES (?, ?, NULL)', (id, password))
-            user.id = id
-            conn.commit()
-            break
-        elif result[0] != password:
-            st.error('誕生日が間違っています')
-            id = None  # Clear id to prevent access to pages
-        else:
-            user.id = id
-            break
+
+id = st.text_input('学籍番号を入力してください')
+password = st.text_input('誕生日を入力してください', type='password')
+if id and password:
+    c.execute('SELECT password FROM students WHERE id = ?', (id,))
+    result = c.fetchone()
+    if result is None:
+        # Register new user
+        c.execute('INSERT INTO students (id, password, understanding) VALUES (?, ?, NULL)', (id, password))
+        user.id = id
+        conn.commit()
+    elif result[0] != password:
+        st.error('誕生日が間違っています')
+        id = None  # Clear id to prevent access to pages
+    else:
+        user.id = id
 
 conn = sqlite3.connect('confused.db')
 c = conn.cursor()
