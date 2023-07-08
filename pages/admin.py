@@ -15,7 +15,7 @@ if password == 'caretaker':
 
     # Display all student data in a table
     st.write('All student data:')
-    df = pd.DataFrame(students, columns=['ID', 'Password', 'Understanding'])
+    df = pd.DataFrame(students, columns=['ID', 'Password', 'Understanding','CreatedAt'])
     st.dataframe(df)
 
     # Allow admin to perform CRUD operations
