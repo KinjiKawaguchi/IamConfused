@@ -18,9 +18,11 @@ c.execute('''
     CREATE TABLE IF NOT EXISTS students (
         id TEXT PRIMARY KEY,
         password TEXT,
-        understanding INTEGER
+        understanding INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
 ''')
+
 conn.commit()
 
 

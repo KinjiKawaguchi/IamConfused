@@ -72,4 +72,4 @@ if password == 'caretaker':
         conn.commit()
         st.write('100 random students added.')
 else:
-    st.write('Please login to access this page.')
+    st.write('P-----login to access this page.')
