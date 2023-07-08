@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from faker import Faker
+import random
 
 # Enter password
 password = st.text_input("Enter password", type='password')
