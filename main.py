@@ -63,4 +63,3 @@ if not user.id == None:
             c.execute('UPDATE students SET understanding = ? WHERE id = ?', (understanding, id))
             conn.commit()
             st.write('理解度が更新されました')
-            break  # Exit the loop as soon as a button is pressed
