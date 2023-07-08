@@ -60,6 +60,7 @@ def showGraph():
 showGraph()
 
 # And schedule it to run every 10 seconds
+'''
 state = st.session_state
 if "run_id" not in state:
     state.run_id = 0
@@ -68,3 +69,4 @@ while True:
     showGraph()
     state.run_id += 1
     time.sleep(10)
+'''
