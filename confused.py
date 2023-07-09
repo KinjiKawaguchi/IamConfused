@@ -2,14 +2,6 @@ import streamlit as st
 import sqlite3
 from pages import graph
 
-class User:
-    def __init__(self):
-        self.id = None
-        self.understanding = 5
-
-# Connect to SQLite database4
-user = User()
-
 conn = sqlite3.connect('confused.db')
 c = conn.cursor()
 
@@ -34,16 +26,13 @@ if id and password:
     if result is None:
         # Register new user
         c.execute('INSERT INTO students (id, password, understanding) VALUES (?, ?, NULL)', (id, password))
-        user.id = id
         conn.commit()
     elif result[0] != password:
         st.error('誕生日が間違っています')
         id = None  # Clear id to prevent access to pages
-    else:
-        user.id = id
 
 understanding = None
-if not user.id == None:
+if not id == None:
     # Define the options and their corresponding values
     options = [
         ('😭（全く理解できなかった）', 0),
