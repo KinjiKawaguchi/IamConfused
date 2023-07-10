@@ -1,44 +1,21 @@
 import streamlit as st
-import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-
+from DatabaseManager import DatabaseManager
 
 def showGraph():
-    conn = sqlite3.connect('confused.db')
-    c = conn.cursor()
+    db = DatabaseManager.create_tables_if_not_exists('confused.db')
 
-    # Create table for students if it doesn't exist
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS students (
-            id TEXT PRIMARY KEY,
-            password TEXT,
-            understanding INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    db.create_tables_if_not_exists()
 
-    # テーブルが存在するか確認
-    def check_table_exists(db_con, table_name):
-        db_cur = db_con.cursor()
-        db_cur.execute("""
-            SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{}'
-            """.format(table_name.replace('\'', '\'\'')))
-        if db_cur.fetchone()[0] == 1:
-            return True
-        return False
+    db.check_table_exists('students')
+
 
     # studentsテーブルが存在すれば以下のクエリを実行
-    if check_table_exists(conn, 'students'):
-        c = conn.cursor()
-        c.execute('SELECT COUNT(*) FROM students')
-        count = c.fetchone()[0]
-
-        if count > 0:
-            c.execute(
-                'SELECT understanding, COUNT(*) FROM students WHERE understanding IS NOT NULL GROUP BY understanding')
-            results = c.fetchall()
+    if db.check_table_exists('students'):
+        if db.count_student() > 0:
+            result = db.get_understanding_distribution()
 
             # Show as a bar chart
             df = pd.DataFrame(results, columns=['Understanding', 'Count'])
