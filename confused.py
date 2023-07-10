@@ -17,7 +17,7 @@ c.execute('''
 
 conn.commit()
 
-
+id = None
 id = st.text_input('学籍番号を入力してください')
 password = st.text_input('誕生日を入力してください', type='password')
 if id and password:
