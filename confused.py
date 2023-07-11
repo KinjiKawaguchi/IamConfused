@@ -1,38 +1,30 @@
 import streamlit as st
-import sqlite3
-from pages import graph
+from DatabaseManager import DatabaseManager
 
-conn = sqlite3.connect('confused.db')
-c = conn.cursor()
+db = DatabaseManager('confused.db')
+db.create_tables_if_not_exists()
 
-# Create table for students if it doesn't exist
-c.execute('''
-    CREATE TABLE IF NOT EXISTS students (
-        id TEXT PRIMARY KEY,
-        password TEXT,
-        understanding INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-''')
-
-conn.commit()
-
-
+login = False
 id = st.text_input('学籍番号を入力してください')
 password = st.text_input('誕生日を入力してください', type='password')
 if id and password:
-    c.execute('SELECT password FROM students WHERE id = ?', (id,))
-    result = c.fetchone()
+    result = db.get_password(id)
     if result is None:
         # Register new user
-        c.execute('INSERT INTO students (id, password, understanding) VALUES (?, ?, NULL)', (id, password))
-        conn.commit()
+        db.register_student(id, password)
+        login = True
     elif result[0] != password:
         st.error('誕生日が間違っています')
         id = None  # Clear id to prevent access to pages
+        login = False
+    elif result[0] == password:
+        st.write("ログインに成功しました。")
+        login = True
+else:
+    st.write("学籍番号と誕生日を入力してください。")
 
 understanding = None
-if not id == None:
+if login:
     # Define the options and their corresponding values
     options = [
         ('😭（全く理解できなかった）', 0),
@@ -50,7 +42,4 @@ if not id == None:
     for option, value in options:
         if st.button(option):
             understanding = value
-            # Update understanding in database
-            c.execute('UPDATE students SET understanding = ? WHERE id = ?', (understanding, id))
-            conn.commit()
-            #st.write('理解度が更新されました')
+            db.update_understanding(id, understanding)
