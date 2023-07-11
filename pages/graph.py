@@ -4,46 +4,35 @@ import matplotlib.pyplot as plt
 import time
 from DatabaseManager import DatabaseManager
 
-def showGraph():
-    db = DatabaseManager.create_tables_if_not_exists('confused.db')
+def showGraph(slot):
+    db = DatabaseManager('confused.db')
 
     db.create_tables_if_not_exists()
 
-    db.check_table_exists('students')
-
-
-    # studentsテーブルが存在すれば以下のクエリを実行
     if db.check_table_exists('students'):
         if db.count_student() > 0:
-            result = db.get_understanding_distribution()
+            results = db.get_understanding_distribution()
 
-            # Show as a bar chart
             df = pd.DataFrame(results, columns=['Understanding', 'Count'])
             df = df.sort_values('Understanding')
             plt.bar(df['Understanding'], df['Count'], tick_label=df['Understanding'])
             plt.xlabel('Understanding')
             plt.ylabel('Count')
             plt.title('Understanding Distribution')
-            st.pyplot(plt.gcf())
+            slot.pyplot(plt.gcf())  # use the provided slot to show the plot
             plt.clf()
         else:
-            print("No records in the table.")
+            print("[graph.py]No records in the table.")
 
-    # データベース接続を閉じる
-    conn.close()
+# Create an empty slot
+plot_slot = st.empty()
 
-
-# Run the function once
-showGraph()
-
-# And schedule it to run every 10 seconds
-'''
 state = st.session_state
 if "run_id" not in state:
     state.run_id = 0
 
+# And schedule it to run every 10 seconds
 while True:
-    showGraph()
+    showGraph(plot_slot)  # use the same slot every time
     state.run_id += 1
     time.sleep(10)
-'''

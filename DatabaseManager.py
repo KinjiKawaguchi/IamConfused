@@ -6,14 +6,13 @@ class DatabaseManager:
         self.c = self.conn.cursor()
 
     def create_tables_if_not_exists(self):
-        self.c.execute('''
-            CREATE TABLE IF NOT EXISTS students (
+        self.c.execute('''CREATE TABLE IF NOT EXISTS students (
                 id TEXT PRIMARY KEY,
                 password TEXT,
                 understanding INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
+            )''')
+        self.conn.commit()
 
     def update_understanding(self, new_understanding, id_to_update):
         self.c.execute('UPDATE students SET understanding = ? WHERE id = ?', (new_understanding, id_to_update))
@@ -34,7 +33,7 @@ class DatabaseManager:
         students = self.c.fetchall()
         return students
 
-    def get_student(self,id):
+    def get_student(self, id):
         self.c.execute('SELECT * FROM students WHERE id = ?', (id,))
         student = self.c.fetchone()
         return student

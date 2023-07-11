@@ -1,13 +1,17 @@
+import os
 import streamlit as st
 import pandas as pd
 from faker import Faker
 import random
 from DatabaseManager import DatabaseManager
 
-
 # Enter password
 password = st.text_input("Enter password", type='password')
-if password == 'caretaker':
+
+# Get password from environment variable
+correct_password = os.getenv("ADMIN_PASSWORD")
+
+if password == correct_password:
     # Connect to SQLite database
     db = DatabaseManager('confused.db')
     db.create_tables_if_not_exists()
@@ -65,7 +69,7 @@ if password == 'caretaker':
             password = fake.password(length=8)
             understanding = random.randint(0, 9)
             db.register_student(id, password)
-            db.update_understanding(id,understanding)
+            db.update_understanding(understanding, id)
         st.write('100 random students added.')
 else:
     st.write('Please enter your password to access this page.')
