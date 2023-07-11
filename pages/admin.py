@@ -1,3 +1,4 @@
+import hashlib
 import os
 import streamlit as st
 import pandas as pd
@@ -5,13 +6,18 @@ from faker import Faker
 import random
 from DatabaseManager import DatabaseManager
 
-# Enter password
-password = st.text_input("Enter password", type='password')
+# Enter admin credentials
+admin_username = st.text_input("Enter admin username")
+admin_password = hashlib.sha256(st.text_input("Enter admin password", type='password').encode()).hexdigest()
 
-# Get password from environment variable
-correct_password = os.getenv("ADMIN_PASSWORD")
 
-if password == correct_password:
+
+# Connect to SQLite database
+db = DatabaseManager('confused.db')
+db.create_tables_if_not_exists()
+
+# Check if the entered admin credentials are correct
+if db.authenticate_admin(admin_username, admin_password):
     # Connect to SQLite database
     db = DatabaseManager('confused.db')
     db.create_tables_if_not_exists()

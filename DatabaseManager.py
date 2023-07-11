@@ -63,3 +63,16 @@ class DatabaseManager:
         understanding = self.c.execute('SELECT understanding, COUNT(*) FROM students WHERE understanding IS NOT NULL GROUP BY understanding')
         understanding = self.c.fetchall()
         return understanding
+
+    def authenticate_admin(self, admin_username, admin_password):
+        # Query the admin table
+        self.c.execute("SELECT * FROM admin WHERE name = ? AND password = ?", (admin_username, admin_password))
+
+        # Fetch one record
+        record = self.c.fetchone()
+
+        # If a record is found, return True, else return False
+        if record is not None:
+            return True
+        else:
+            return False
