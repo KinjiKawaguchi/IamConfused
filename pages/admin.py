@@ -1,5 +1,4 @@
 import hashlib
-import os
 import streamlit as st
 import pandas as pd
 from faker import Faker
