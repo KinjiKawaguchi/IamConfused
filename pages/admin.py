@@ -9,8 +9,6 @@ from DatabaseManager import DatabaseManager
 admin_username = st.text_input("Enter admin username")
 admin_password = hashlib.sha256(st.text_input("Enter admin password", type='password').encode()).hexdigest()
 
-
-
 # Connect to SQLite database
 db = DatabaseManager('confused.db')
 db.create_tables_if_not_exists()

@@ -16,7 +16,7 @@ class DatabaseManager:
             self.c.execute('''CREATE TABLE IF NOT EXISTS admin (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                password TEXT NOT NULL,
+                password TEXT NOT NULL
                 )''')
             self.c.execute('''INSERT INTO admin (name, password) VALUES ('admin', 'b7e4ab96e4b6b789cdc07fcae096d396e53a879548d7cbc2ac37dd06635a1520')''')
         
