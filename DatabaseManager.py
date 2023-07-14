@@ -18,9 +18,13 @@ class DatabaseManager:
                 name TEXT NOT NULL,
                 password TEXT NOT NULL
                 )''')
-            self.c.execute('''INSERT INTO admin (name, password) VALUES ('admin', 'aba1a94e651a7642267b6825f14e804ebd98aa401efd0d9d0a2ba2cc0d58e1b1')''')
-        
-        self.conn.commit()
+
+        self.c.execute('SELECT * FROM admin WHERE name = ? AND password = ?', ('admin', 'aba1a94e651a7642267b6825f14e804ebd98aa401efd0d9d0a2ba2cc0d58e1b1'))
+        result = self.c.fetchone()
+
+        if result is None:
+            self.c.execute('''INSERT INTO admin(name ,password) VALUES ('admin', 'aba1a94e651a7642267b6825f14e804ebd98aa401efd0d9d0a2ba2cc0d58e1b1')''')
+            self.conn.commit()
 
     def update_understanding(self, new_understanding, id_to_update):
         self.c.execute('UPDATE students SET understanding = ? WHERE id = ?', (new_understanding, id_to_update))
