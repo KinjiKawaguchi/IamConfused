@@ -1,5 +1,4 @@
 import hashlib
-import os
 import streamlit as st
 import pandas as pd
 from faker import Faker
@@ -10,15 +9,14 @@ from DatabaseManager import DatabaseManager
 admin_username = st.text_input("Enter admin username")
 admin_password = hashlib.sha256(st.text_input("Enter admin password", type='password').encode()).hexdigest()
 
-
-
 # Connect to SQLite database
 db = DatabaseManager('confused.db')
 db.create_tables_if_not_exists()
 
-# Check if the entered admin credentials are correct
 if db.authenticate_admin(admin_username, admin_password):
-    # Connect to SQLite database
+
+    # Check if the entered admin credentials are correct
+        # Connect to SQLite database
     db = DatabaseManager('confused.db')
     db.create_tables_if_not_exists()
 
@@ -52,6 +50,7 @@ if db.authenticate_admin(admin_username, admin_password):
     elif operation == 'Update':
         id_to_update = st.text_input('Enter ID to update')
         new_understanding = st.number_input('Enter new understanding level', min_value=0, max_value=9)
+        new_password = st.text_input('Enter new password', type='password')
         if st.button('Update student'):
             db.update_understanding(id_to_update, new_understanding)
             st.write('Student updated.')
@@ -68,6 +67,19 @@ if db.authenticate_admin(admin_username, admin_password):
         st.write('Database reset.')
 
     # Allow admin to add 100 random students
+    if st.button('Add some random students'):
+        num_of_add_student = st.number_input('Enter number of students to add', min_value=1, max_value=1000000)
+        fake = Faker()
+        for _ in range(num_of_add_student):
+            id = fake.unique.random_number(digits=8)
+            password = fake.password(length=8)
+            understanding = random.randint(0, 9)
+            db.register_student(id, password)
+            db.update_understanding(understanding, id)
+        st.write(f'{num_of_add_student} random students added.')
+    else:
+        st.write('Please enter a number between 1 and 1000000.')
+
     if st.button('Add 100 random students'):
         fake = Faker()
         for _ in range(100):
@@ -77,5 +89,5 @@ if db.authenticate_admin(admin_username, admin_password):
             db.register_student(id, password)
             db.update_understanding(understanding, id)
         st.write('100 random students added.')
-else:
-    st.write('Please enter your password to access this page.')
+    else:
+        st.write('Please enter your password to access this page.')

@@ -12,12 +12,19 @@ class DatabaseManager:
                 understanding INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
+        if not self.check_table_exists('admin'):
+            self.c.execute('''CREATE TABLE IF NOT EXISTS admin (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                password TEXT NOT NULL
+                )''')
+            self.c.execute('''INSERT INTO admin (name, password) VALUES ('admin', 'aba1a94e651a7642267b6825f14e804ebd98aa401efd0d9d0a2ba2cc0d58e1b1')''')
+        
         self.conn.commit()
 
     def update_understanding(self, new_understanding, id_to_update):
         self.c.execute('UPDATE students SET understanding = ? WHERE id = ?', (new_understanding, id_to_update))
         self.conn.commit()
-
 
     def get_password(self,id):
         self.c.execute('SELECT password FROM students WHERE id = ?', (id,))
