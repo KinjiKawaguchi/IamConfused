@@ -38,9 +38,10 @@ if login:
         ('😃（大部分を理解できた）', 8),
         ('😁（完全に理解できた）', 9)
     ]
-
+    
+    print(id)
     for option, value in options:
         if st.button(option):
             understanding = value
-            db.update_understanding(id, understanding)
+            db.update_understanding(understanding, id)
             

@@ -18,14 +18,13 @@ class DatabaseManager:
                 name TEXT NOT NULL,
                 password TEXT NOT NULL
                 )''')
-            self.c.execute('''INSERT INTO admin (name, password) VALUES ('admin', 'b7e4ab96e4b6b789cdc07fcae096d396e53a879548d7cbc2ac37dd06635a1520')''')
+            self.c.execute('''INSERT INTO admin (name, password) VALUES ('admin', 'aba1a94e651a7642267b6825f14e804ebd98aa401efd0d9d0a2ba2cc0d58e1b1')''')
         
         self.conn.commit()
 
     def update_understanding(self, new_understanding, id_to_update):
         self.c.execute('UPDATE students SET understanding = ? WHERE id = ?', (new_understanding, id_to_update))
         self.conn.commit()
-
 
     def get_password(self,id):
         self.c.execute('SELECT password FROM students WHERE id = ?', (id,))
