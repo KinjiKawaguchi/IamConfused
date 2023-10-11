@@ -24,15 +24,25 @@ def showGraph(slot):
         else:
             print("[graph.py]No records in the table.")
 
-# Create an empty slot
-plot_slot = st.empty()
+# Enter admin credentials
+admin_username = st.text_input("Enter admin username")
+admin_password = hashlib.sha256(st.text_input("Enter admin password", type='password').encode()).hexdigest()
 
-state = st.session_state
-if "run_id" not in state:
-    state.run_id = 0
+# Connect to SQLite database
+db = DatabaseManager('confused.db')
+db.create_tables_if_not_exists()
 
-# And schedule it to run every 10 seconds
-while True:
-    showGraph(plot_slot)  # use the same slot every time
-    state.run_id += 1
-    time.sleep(10)
+if db.authenticate_admin(admin_username, admin_password):
+    # Create an empty slot
+    plot_slot = st.empty()
+
+    state = st.session_state
+    if "run_id" not in state:
+        state.run_id = 0
+
+    # And schedule it to run every 10 seconds
+    while True:
+        
+        showGraph(plot_slot)  # use the same slot every time
+        state.run_id += 1
+        time.sleep(10)
