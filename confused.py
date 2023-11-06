@@ -1,47 +1,72 @@
 import streamlit as st
 from DatabaseManager import DatabaseManager
 
-db = DatabaseManager('confused.db')
+# DatabaseManagerの初期化
+db = DatabaseManager('wtp.db')
 db.create_tables_if_not_exists()
 
-login = False
+# ユーザー認証のフラグ
+if 'login' not in st.session_state:
+    st.session_state.login = False
+
+# ユーザーIDとパスワード入力フィールド
 id = st.text_input('学籍番号を入力してください')
 password = st.text_input('誕生日を入力してください', type='password')
+
+# ログイン処理
 if id and password:
     result = db.get_password(id)
     if result is None:
-        # Register new user
+        # 新規ユーザー登録
         db.register_student(id, password)
-        login = True
+        st.session_state.login = True
     elif result[0] != password:
         st.error('誕生日が間違っています')
-        id = None  # Clear id to prevent access to pages
-        login = False
-    elif result[0] == password:
-        st.write("ログインに成功しました。")
-        login = True
-else:
-    st.write("学籍番号と誕生日を入力してください。")
+    else:
+        st.success("ログインに成功しました。")
+        st.session_state.login = True
 
-understanding = None
-if login:
-    # Define the options and their corresponding values
-    options = [
-        ('😭（全く理解できなかった）', 0),
-        ('🥺（ほとんど理解できなかった）', 1),
-        ('😨（大部分が理解できなかった）', 2),
-        ('😰（多少は理解できたがまだ難しい）', 3),
-        ('😕（あまり理解できなかった）', 4),
-        ('😐（半分くらい理解できた）', 5),
-        ('🙂（まあまあ理解できた）', 6),
-        ('😊（ほぼ理解できた）', 7),
-        ('😃（大部分を理解できた）', 8),
-        ('😁（完全に理解できた）', 9)
-    ]
-    
-    print(id)
-    for option, value in options:
-        if st.button(option):
-            understanding = value
-            db.update_understanding(understanding, id)
-            
+# ログインしていなければ指示を出力
+if not st.session_state.login:
+    st.warning("学籍番号と誕生日を入力してください。")
+
+# WTP質問フロー
+if st.session_state.login:
+    # 状態遷移の辞書
+    state_transitions = {
+        2000: {'払える': 3000, '払えない': 1000},
+        3000: {'払える': 4000, '払えない': '終了(2000-3000)'},
+        4000: {'払える': '終了(4000-)', '払えない': '終了(3000-4000)'},
+        1000: {'払える': '終了(1000-2000)', '払えない': '終了(-1000)'}
+    }
+
+    # 初期状態をセットする
+    if 'current_state' not in st.session_state:
+        st.session_state.current_state = 2000
+
+    # 現在の状態を表示
+    st.write(f"現在の価格: ¥{st.session_state.current_state}")
+
+    # ボタンを表示し、遷移ロジックを実装
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('払える'):
+            next_state = state_transitions[st.session_state.current_state].get('払える')
+            if isinstance(next_state, str) and next_state.startswith('終了'):
+                st.success(f"あなたのWTPは {next_state} です。")
+                # データベースにWTPを記録する
+                db.record_wtp(id, st.session_state.current_state, next_state)
+            else:
+                st.session_state.current_state = next_state
+                st.experimental_rerun()
+
+    with col2:
+        if st.button('払えない'):
+            next_state = state_transitions[st.session_state.current_state].get('払えない')
+            if isinstance(next_state, str) and next_state.startswith('終了'):
+                st.success(f"あなたのWTPは {next_state} です。")
+                # データベースにWTPを記録する
+                db.record_wtp(id, st.session_state.current_state, next_state)
+            else:
+                st.session_state.current_state = next_state
+                st.experimental_rerun()
