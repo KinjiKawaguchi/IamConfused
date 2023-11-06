@@ -1,35 +1,48 @@
 import streamlit as st
 
-# 状態遷移の辞書
-transitions = {
-    2000: {'払う': 3000, '払えない': 1000},
-    3000: {'払う': 4000, '払えない': '終了 (2000-3000)'},
-    4000: {'払う': '終了 (4000-)', '払えない': '終了 (3000-4000)'},
-    1000: {'払う': '終了 (1000-2000)', '払えない': '終了 (-1000)'}
-}
-
-# セッションステートの初期化
+# 初期設定
 if 'current_offer' not in st.session_state:
     st.session_state['current_offer'] = 2000
 
-# ユーザーのレスポンスに応じた処理を行う関数
-def handle_response(response):
-    if st.session_state['current_offer'] in transitions:
-        next_state = transitions[st.session_state['current_offer']][response]
-        
-        if isinstance(next_state, int):  # まだ終了していない場合
-            st.session_state['current_offer'] = next_state
-        else:  # 終了する場合
-            st.success(next_state)
-            st.session_state['current_offer'] = '終了'
+# 終了状態をチェックする関数
+def is_ended(offer):
+    return isinstance(offer, str) and offer.startswith('終了')
 
-# アンケートの質問と応答ボタンを表示
-if isinstance(st.session_state['current_offer'], int):
-    st.write(f"あなたは {st.session_state['current_offer']} 円を支払う意思がありますか？")
+# ユーザーのレスポンスを処理する関数
+def update_offer(agree):
+    if agree:
+        # 払うことに同意した場合
+        if st.session_state.current_offer == 2000:
+            st.session_state.current_offer = 3000
+        elif st.session_state.current_offer == 3000:
+            st.session_state.current_offer = 4000
+        elif st.session_state.current_offer == 4000:
+            st.session_state.current_offer = '終了 (4000以上)'
+    else:
+        # 払うことに同意しなかった場合
+        if st.session_state.current_offer == 2000:
+            st.session_state.current_offer = 1000
+        elif st.session_state.current_offer == 3000:
+            st.session_state.current_offer = '終了 (2000-3000)'
+        elif st.session_state.current_offer == 1000:
+            st.session_state.current_offer = '終了 (1000以下)'
 
-    if st.button('払える'):
-        handle_response('払う')
-    elif st.button('払えない'):
-        handle_response('払えない')
-else:
-    st.write("アンケートは終了しました。")
+# メインアプリケーション
+def main():
+    if is_ended(st.session_state['current_offer']):
+        st.write(st.session_state['current_offer'])
+    else:
+        st.write(f"あなたは {st.session_state['current_offer']} 円を支払う意思がありますか？")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button('払える'):
+                update_offer(True)
+        with col2:
+            if st.button('払えない'):
+                update_offer(False)
+
+        # 再描画を避けるために状態の変更後に即時アップデートする
+        main()
+
+main()
