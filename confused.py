@@ -1,51 +1,64 @@
 import streamlit as st
+from DatabaseManager import DatabaseManager
 
-# 初期設定
-if 'current_offer' not in st.session_state:
-    st.session_state['current_offer'] = 2000
+# DatabaseManagerの初期化
+db = DatabaseManager('wtp.db')
+db.create_tables_if_not_exists()
 
-# 終了状態をチェックする関数
-def is_ended(offer):
-    return isinstance(offer, str) and offer.startswith('終了')
+# ユーザー認証のフラグ
+login = False
 
-# ユーザーのレスポンスを処理する関数
-def update_offer(agree):
-    if agree:
-        # 払うことに同意した場合
-        if st.session_state['current_offer'] == 2000:
-            st.session_state['current_offer'] = 3000
-        elif st.session_state['current_offer'] == 3000:
-            st.session_state['current_offer'] = 4000
-        elif st.session_state['current_offer'] == 4000:
-            st.session_state['current_offer'] = '終了 (4000以上)'
+# ユーザーIDとパスワード入力フィールド
+id = st.text_input('学籍番号を入力してください')
+password = st.text_input('誕生日を入力してください', type='password')
+
+# ログイン処理
+if id and password:
+    result = db.get_password(id)
+    if result is None:
+        # 新規ユーザー登録
+        db.register_student(id, password)
+        login = True
+    elif result[0] != password:
+        st.error('誕生日が間違っています')
+        login = False
     else:
-        # 払うことに同意しなかった場合
-        if st.session_state['current_offer'] == 2000:
-            st.session_state['current_offer'] = 1000
-        elif st.session_state['current_offer'] == 3000:
-            st.session_state['current_offer'] = '終了 (2000-3000)'
-        elif st.session_state['current_offer'] == 1000:
-            st.session_state['current_offer'] = '終了 (1000以下)'
+        st.success("ログインに成功しました。")
+        login = True
 
-# メインアプリケーション
-def main():
-    if is_ended(st.session_state['current_offer']):
-        st.write(st.session_state['current_offer'])
-    else:
-        st.write(f"あなたは {st.session_state['current_offer']} 円を支払う意思がありますか？")
+# ログインしていなければ指示を出力
+if not login:
+    st.warning("学籍番号と誕生日を入力してください。")
 
-        agree_key = f"agree_{st.session_state['current_offer']}"
-        disagree_key = f"disagree_{st.session_state['current_offer']}"
+# WTP質問フロー
+if login:
+    # 状態遷移の辞書
+    state_transitions = {
+        2000: {'払う': 3000, '払えない': 1000},
+        3000: {'払える': 4000, '払えない': '終了(2000-3000)'},
+        4000: {'払える': '終了(4000-)', '払えない': '終了(3000-4000)'},
+        1000: {'払える': '終了(1000-2000)', '払えない': '終了(-1000)'}
+    }
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button('払える', key=agree_key):
-                update_offer(True)
-        with col2:
-            if st.button('払えない', key=disagree_key):
-                update_offer(False)
+    # ユーザーの現在の状態
+    current_state = 2000  # 初期状態
 
-        # 再描画を避けるために状態の変更後に即時アップデートする
-        st.rerun()
+    # 状態とボタンを表示
+    st.write(f"現在の価格: ¥{current_state}")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('払える'):
+            next_state = state_transitions[current_state].get('払える')
+    with col2:
+        if st.button('払えない'):
+            next_state = state_transitions[current_state].get('払えない')
 
-main()
+    # 次の状態が終了状態ならばデータベースに記録して結果を表示
+    if isinstance(next_state, str) and next_state.startswith('終了'):
+        st.success(f"あなたのWTPは {next_state} です。")
+        # データベースにWTPを記録するコードをここに書く
+        # 例: db.record_wtp(id, current_state, next_state)
+    elif next_state:
+        # 状態を更新して再度表示
+        current_state = next_state
+        st.experimental_rerun()
