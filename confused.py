@@ -1,54 +1,50 @@
 import streamlit as st
 
-# データベースマネージャークラスは適切な実装を想定しています
-from DatabaseManager import DatabaseManager
-
-db = DatabaseManager('confused.db')
-db.create_tables_if_not_exists()
-
-# セッションステートの初期化
-if 'login' not in st.session_state:
-    st.session_state['login'] = False
-if 'wtp' not in st.session_state:
-    st.session_state['wtp'] = None
+# セッションステートで現在の金額を追跡します
 if 'current_offer' not in st.session_state:
-    st.session_state['current_offer'] = 2000  # 最初のオファー
+    st.session_state['current_offer'] = 2000  # 初期オファー
 
-id = st.text_input('学籍番号を入力してください')
-password = st.text_input('誕生日を入力してください', type='password')
-
-# ログイン処理
-if id and password and not st.session_state['login']:
-    result = db.get_password(id)
-    if result is None:
-        db.register_student(id, password)
-        st.session_state['login'] = True
-    elif result[0] != password:
-        st.error('誕生日が間違っています')
-    elif result[0] == password:
-        st.session_state['login'] = True
-
-# ユーザーがログインしている場合にWTPアンケートを表示
-if st.session_state['login']:
-    st.write(f"次の商品に対して、あなたが支払う意思がある最大金額は {st.session_state['current_offer']} 円ですか？")
+# ユーザーが「払える」または「払えない」と答えた場合のロジックを関数にまとめます
+def handle_response(response):
+    current_offer = st.session_state['current_offer']
     
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button('はい'):
-            # はいと回答した場合、セッションステートのWTPを更新し、次のオファーを設定
-            st.session_state['wtp'] = st.session_state['current_offer']
-            if st.session_state['current_offer'] < 5000:  # 最大オファーまで繰り返す
-                st.session_state['current_offer'] += 1000  # 次のオファー額を増やす
-            else:
-                st.success(f"あなたの支払い意思価格は {st.session_state['wtp']} 円です。")
-                db.register_wtp_response(id, st.session_state['wtp'])  # DBに登録する
-    with col2:
-        if st.button('いいえ'):
-            # いいえと回答した場合、現在のオファーを最終的なWTPとして記録
-            # はいと回答した場合、セッションステートのWTPを更新し、次のオファーを設定
-            st.session_state['wtp'] = st.session_state['current_offer']
-            if st.session_state['current_offer'] > 999:  # 最大オファーまで繰り返す
-                st.session_state['current_offer'] -= 1000  # 次のオファー額を増やす
-            else:
-                st.success(f"あなたの支払い意思価格は {st.session_state['wtp']} 円です。")
-                db.register_wtp_response(id, st.session_state['wtp'])  # DBに登録する
+    # ユーザーの応答に基づいて次の状態に遷移します
+    if current_offer == 2000:
+        if response == '払う':
+            st.session_state['current_offer'] = 3000
+        else:  # '払えない'
+            st.session_state['current_offer'] = 1000
+    
+    elif current_offer == 1000:
+        if response == '払える':
+            st.success('終了 (1000-2000)')
+            st.session_state['current_offer'] = '終了'
+        else:  # '払えない'
+            st.success('終了 (-1000)')
+            st.session_state['current_offer'] = '終了'
+    
+    elif current_offer == 3000:
+        if response == '払えない':
+            st.success('終了 (2000-3000)')
+            st.session_state['current_offer'] = '終了'
+        else:  # '払える'
+            st.session_state['current_offer'] = 4000
+    
+    elif current_offer == 4000:
+        if response == '払えない':
+            st.success('終了 (3000-4000)')
+            st.session_state['current_offer'] = '終了'
+        else:  # '払える'
+            st.success('終了 (4000-)')
+            st.session_state['current_offer'] = '終了'
+
+# アンケートの質問と応答ボタンを表示します
+if st.session_state['current_offer'] != '終了':
+    st.write(f"あなたは {st.session_state['current_offer']} 円を支払う意思がありますか？")
+    
+    if st.button('払える'):
+        handle_response('払う')
+    elif st.button('払えない'):
+        handle_response('払えない')
+else:
+    st.write("アンケートは終了しました。")
