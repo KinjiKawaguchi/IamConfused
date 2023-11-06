@@ -46,6 +46,6 @@ def main():
                 update_offer(False)
 
         # 再描画を避けるために状態の変更後に即時アップデートする
-        st.experimental_rerun()
+        st.rerun()
 
 main()
