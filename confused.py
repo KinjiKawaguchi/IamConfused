@@ -45,8 +45,10 @@ if st.session_state['login']:
     with col2:
         if st.button('いいえ'):
             # いいえと回答した場合、現在のオファーを最終的なWTPとして記録
-            if st.session_state['wtp'] is None:  # まだWTPが記録されていない場合
-                st.session_state['wtp'] = 0  # WTPを0として記録
-            st.success(f"あなたの支払い意思価格は {st.session_state['wtp']} 円です。")
-            db.register_wtp_response(id, st.session_state['wtp'])  # DBに登録する
-            st.session_state['current_offer'] = 0  # オファーをリセット
+            # はいと回答した場合、セッションステートのWTPを更新し、次のオファーを設定
+            st.session_state['wtp'] = st.session_state['current_offer']
+            if st.session_state['current_offer'] > 999:  # 最大オファーまで繰り返す
+                st.session_state['current_offer'] -= 1000  # 次のオファー額を増やす
+            else:
+                st.success(f"あなたの支払い意思価格は {st.session_state['wtp']} 円です。")
+                db.register_wtp_response(id, st.session_state['wtp'])  # DBに登録する
