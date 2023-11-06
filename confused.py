@@ -66,4 +66,7 @@ if st.session_state.login:
             if isinstance(next_state, str) and next_state.startswith('終了'):
                 st.success(f"あなたのWTPは {next_state} です。")
                 # データベースにWTPを記録する
-                db.record_wtp(id, st.session_state.current_state,
+                db.record_wtp(id, st.session_state.current_state, next_state)
+            else:
+                st.session_state.current_state = next_state
+                st.experimental_rerun()
